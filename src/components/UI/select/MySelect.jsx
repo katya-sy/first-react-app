@@ -1,5 +1,4 @@
 import React from "react";
-// import classes from "./MyInput.module.css";
 
 const MySelect = ({ options, defaultValue, value, onChange }) => {
   return (
