@@ -1,8 +1,7 @@
 import React from "react";
 import Comment from "./Comment";
 
-const CommentList = (comments) => {
-  // console.log(comments);
+const CommentList = ({ comments }) => {
   return (
     <div>
       {comments.map((comment) => (
