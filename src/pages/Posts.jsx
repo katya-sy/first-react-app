@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "../styles/App.css";
 import PostList from "../components/PostList";
 import PostForm from "../components/PostForm";
@@ -11,6 +11,7 @@ import Loader from "../components/UI/loader/Loader";
 import { useFetching } from "../hooks/useFetching";
 import { getPageCount } from "../utils/pages";
 import Pagination from "../components/UI/pagination/Pagination";
+import { useObserver } from "../hooks/useObserver";
 
 function Posts() {
   const [posts, setPosts] = useState([]);
@@ -19,24 +20,28 @@ function Posts() {
   const [totalPages, setTotalPages] = useState(0);
   const [limit, setLimit] = useState(10);
   const [page, setPage] = useState(1);
-
   const sortedAndSearchedPosts = usePosts(posts, filter.sort, filter.query);
+  const lastElement = useRef();
+
   const [fetchPosts, isPostLoading, postError] = useFetching(
     async (limit, page) => {
       const response = await PostService.getAll(limit, page);
-      setPosts(response.data);
+      setPosts([...posts, ...response.data]);
       const totalCount = response.headers["x-total-count"];
       setTotalPages(getPageCount(totalCount, limit));
     }
   );
 
+  useObserver(lastElement, page < totalPages, isPostLoading, () => {
+    setPage(page + 1);
+  });
+
   useEffect(() => {
     fetchPosts(limit, page);
-  }, []);
+  }, [page]);
 
   function changePage(page) {
     setPage(page);
-    fetchPosts(limit, page);
   }
 
   const createPost = (newPost) => {
@@ -63,7 +68,13 @@ function Posts() {
       <hr style={{ margin: "15px 0" }} />
       <PostFilter filter={filter} setFilter={setFilter} />
       {postError && <h2>Error: {postError}</h2>}
-      {isPostLoading ? (
+      <PostList
+        remove={removePost}
+        posts={sortedAndSearchedPosts}
+        title="Post about JS"
+      />
+      <div ref={lastElement} />
+      {isPostLoading && (
         <div
           style={{
             display: "flex",
@@ -73,12 +84,6 @@ function Posts() {
         >
           <Loader />
         </div>
-      ) : (
-        <PostList
-          remove={removePost}
-          posts={sortedAndSearchedPosts}
-          title="Post about JS"
-        />
       )}
       <Pagination totalPages={totalPages} changePage={changePage} page={page} />
     </div>
