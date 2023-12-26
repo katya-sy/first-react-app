@@ -40,13 +40,15 @@ const PostIdPage = () => {
           <p>{post.body}</p>
         </div>
       )}
-      <h2 style={{ marginTop: "30px" }}>Comments</h2>
       {isCommentLoading ? (
         <div style={{ marginTop: "50px" }}>
           <Loader />
         </div>
       ) : (
-        <CommentList comments={comments} />
+        <div>
+          <h2 style={{ marginTop: "30px" }}>Comments</h2>
+          <CommentList comments={comments} />
+        </div>
       )}
     </div>
   );
